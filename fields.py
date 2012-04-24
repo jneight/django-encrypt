@@ -1,9 +1,12 @@
 # coding=utf-8
 
 
-import encrypt
-from django.db import models
 import base64
+
+from django.db import models
+from django.core import validators
+
+import encrypt
 
 
 class EncryptedAESField(models.Field):
@@ -13,21 +16,19 @@ class EncryptedAESField(models.Field):
         return 'TextField'
 
     def _is_encrypted(self, value):
-        # FIXME : no reconoce cadena cifrada
-        if value == '':
-            return False
-        try:
-            return isinstance(value, basestring) and base64.b64decode(value).startswith('-----BEGIN')
-        except:
-            return False
+        return isinstance(value, basestring) and value.startswith('-----BEGIN')
 
     def to_python(self, value):
-        if value == '':
+        if value in validators.EMPTY_VALUES:
             return ''
 
+        if not self._is_encrypted(value):
+            return value
         return encrypt.decode(value)
 
     def get_prep_value(self, value):
-        if value == '':
+        if value in validators.EMPTY_VALUES:
+            return ''
+        if self._is_encrypted(value):
             return value
         return encrypt.encode(value)
