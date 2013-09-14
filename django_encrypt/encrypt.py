@@ -14,6 +14,8 @@ from django.conf import settings
 CRC24_INIT = 0xB704CE
 CRC24_POLY = 0x1864CFB
 
+AES_BLOCK_SIZE = getattr(settings, 'AES_BLOCK_SIZE', 32)
+
 
 def _padding(text):
     """
@@ -21,7 +23,7 @@ def _padding(text):
         The chars added are the ASCII value of the number
         needed
     """
-    num = settings.AES_BLOCK_SIZE - (len(text) % settings.AES_BLOCK_SIZE)
+    num = AES_BLOCK_SIZE - (len(text) % AES_BLOCK_SIZE)
     return text + chr(num) * num
 
 
@@ -29,7 +31,7 @@ def _unpadding(text):
     if len(text) == 0:
         return text
     lastchar = ord(text[-1])
-    if lastchar > settings.AES_BLOCK_SIZE: # no padding
+    if lastchar > AES_BLOCK_SIZE: # no padding
         return text
     return text.rstrip(chr(lastchar))
 
